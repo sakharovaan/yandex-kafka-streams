@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+# Конфигурация
 class ConfigBase(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
@@ -8,10 +9,12 @@ class ConfigBase(BaseSettings):
 
 
 class KafkaConfig(ConfigBase):
-    model_config = SettingsConfigDict(env_prefix="PRODUCER_") 
+    model_config = SettingsConfigDict(env_prefix="AGENT_") 
 
-    KAFKA_BOOTSTRAP_SERVERS: str
+    KAFKA_BROKERS: str
     SCHEMA_REGISTRY_SERVER: str
-    KAFKA_TOPIC: str
-    KAFKA_CENSOR_TOPIC: str
-    KAFKA_BLOCKED_TOPIC: str
+    FAUST_STORE: str
+    INPUT_TOPIC: str
+    OUTPUT_TOPIC: str
+    BLOCKED_TOPIC: str
+    CENSOR_TOPIC: str

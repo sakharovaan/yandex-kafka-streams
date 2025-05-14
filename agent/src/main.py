@@ -7,8 +7,8 @@ from confluent_kafka.schema_registry.avro import \
     SerializationContext, SchemaRegistryClient
 from loguru import logger
 
-from .schemas import Message, CensoredWord, BlockedUser
-from .config import KafkaConfig
+from src.schemas import Message, CensoredWord, BlockedUser
+from src.config import KafkaConfig
 
 
 config = KafkaConfig()
@@ -59,7 +59,7 @@ async def process_messages(stream):
             continue
         
         for word in censored_words['words']:
-            message['text'] = message['text'].replace(f' {word} ', f' {"*" * len(word)} ')
+            message['text'] = message['text'].replace(f'{word}', f'{"*" * len(word)}')
 
         await msg_output_topic.send(value=msg_serializer(message, msg_output_context))
 

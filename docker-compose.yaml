@@ -15,6 +15,8 @@ services:
       - PRODUCER_KAFKA_BOOTSTRAP_SERVERS=kafka-0:9092,kafka-1:9092,kafka-2:9092
       - PRODUCER_SCHEMA_REGISTRY_SERVER=http://schema-registry:8081
       - PRODUCER_KAFKA_TOPIC=messages
+      - PRODUCER_KAFKA_CENSOR_TOPIC=censored_words
+      - PRODUCER_KAFKA_BLOCKED_TOPIC=blocked_users
 
   consumer:
     build: 
@@ -33,6 +35,28 @@ services:
       - CONSUMER_MESSAGES_BATCH_MAX=1
       - CONSUMER_AUTO_COMMIT=true
       - CONSUMER_POLL_INTERVAL_SECONDS=10
+
+  agent:
+    build: 
+      context: agent
+    entrypoint: ["python3", "-m", "faust", "-A", "src.main", "worker", "-l", "INFO"]
+    depends_on:
+      - kafka-0
+      - kafka-1
+      - kafka-2
+      - schema-registry
+    ports:
+      - "6066:6066"
+    environment:
+      - AGENT_KAFKA_BROKERS=kafka://kafka-0:9092;kafka://kafka-1:9092;kafka://kafka-2:9092
+      - AGENT_SCHEMA_REGISTRY_SERVER=http://schema-registry:8081
+      - AGENT_FAUST_STORE=rocksdb://
+      - AGENT_INPUT_TOPIC=messages
+      - AGENT_OUTPUT_TOPIC=filtered_messages
+      - AGENT_BLOCKED_TOPIC=blocked_users
+      - AGENT_CENSOR_TOPIC=censored_words
+    volumes:
+      - agent_db:/app/censorship-app-data
 
   kafka-0:
     image: bitnami/kafka:3.4
@@ -114,4 +138,5 @@ services:
 volumes:
   kafka_0_data: 
   kafka_1_data:
-  kafka_2_data: 
+  kafka_2_data:
+  agent_db:
